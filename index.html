@@ -1,0 +1,448 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>广州市增城区水务综合管理系统</title>
+		<!--标签小图标-->
+		<link rel="shortcut icon" href="three.js-master/images/logo.ico"/>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			html, body {
+				height: 100%;
+			}
+
+			body {
+				background-color: #000000;
+				background-image:url(three.js-master/images/bg.jpg);
+				background-repeat:no-repeat;
+				background-position:center;
+				background-attachment:fixed;
+				background-size:cover;
+				-webkit-background-size:cover;
+				height:100%;
+				margin: 0;
+				font-family: Helvetica, sans-serif;;
+				overflow: hidden;
+			}
+			#info {
+				position: absolute;
+				width: 100%;
+				color: #ffffff;
+				padding: 15px;
+				color: rgba(255,255,255,1);
+				font-family: lisu;
+				font-size: 40px;
+				font-weight: bold;
+				text-align: center;
+				z-index: 1;
+			}
+
+			#menu {
+				position: absolute;
+				top: 70px;
+				width: 100%;
+				text-align: center;
+			}
+
+			.element {
+				width: 320px;
+				height: 190px;
+				text-align: center;
+				cursor: pointer;
+				padding-left:15px;
+				padding-right:15px;
+				padding-top:20px;
+				box-shadow: 0px 0px 12px rgba(0,255,255,0.5);
+				border: 1px solid rgba(127,255,255,0.25);
+				/*background-color: rgba(176,186,220,0.9);*/
+				background-color: rgba(192,192,192,0.9);
+			}
+	
+			.element:hover {
+				box-shadow: 0px 0px 15px rgba(0,255,255,0.95);
+				border: 3px solid rgba(127,255,255,0.95);
+			}
+				.element .name {
+					position: absolute;
+					bottom: 3px;
+					left: 0px;
+					right: 0px;
+					color: rgba(255,255,255,0.85);
+					font-family:kaiti;
+					font-size: 24px;
+					font-weight: bold;
+				}
+				.element img{
+					width:300px;
+					height:150px;
+				}
+
+			button {
+				color: rgba(255,255,255,0.8);
+				background: transparent;
+				outline: 1px solid rgba(127,255,255,0.75);
+				border:0;
+				padding: 5px 10px;
+				cursor: pointer;
+				margin-left:5px;
+
+			}
+			button:hover {
+				background-color: rgba(0,255,255,0.5);
+			}
+			button:active {
+				color: #000000;
+				background-color: rgba(0,255,255,0.75);
+			}
+			.bottomText{
+				width:100%;
+				position: fixed;
+				bottom: 15px;
+				z-index: 1;
+				text-align:center;
+				font-size: 12px;
+				color:#454545;
+			}
+		</style>
+	</head>
+	<body>
+		<script src="three.js-master/build/three.js"></script>
+		<script src="three.js-master/examples/js/libs/tween.min.js"></script>
+		<script src="three.js-master/examples/js/controls/TrackballControls.js"></script>
+		<script src="three.js-master/examples/js/renderers/CSS3DRenderer.js"></script>
+		<script src="three.js-master/examples/js/libs/stats.min.js"></script>
+		<script src="three.js-master/examples/js/jquery.min.js"></script>
+		<script src="three.js-master/examples/js/jquery.ripples.js"></script>
+
+		
+		<div id="info">广州市增城区水务综合管理系统</div>
+		<div id="container"></div>
+		<div id="menu">
+			<button id="table">表格</button>
+			<button id="sphere">球形</button>
+			<button id="helix">环形</button>
+			<button id="grid">格网</button>
+		</div>
+		<div class="bottomText">主办单位：广州市增城区水务局  &nbsp 承办单位：长江科学院<br />
+			Copyright &copy广州市增城区水务局  &nbsp 技术支持：长江科学院  &nbsp 联系电话：027-8888888
+		</div>
+		<script>
+
+			var camera, scene, renderer,projector;
+			var controls,stats;
+
+			var objects = [];
+			var targets = { table: [], sphere: [], helix: [], grid: [] };
+
+			init();
+			animate();
+			$("#table").hide();
+			$("#grid").hide();
+			function init() {
+//				添加背景水波纹动画
+				$('body').ripples({
+					resolution: 400,
+					dropRadius: 8,
+					perturbance: 0.08
+				});
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.z = 3000;
+
+				scene = new THREE.Scene();
+				projector = new THREE.Projector();
+
+				// table  
+				var positionArray=[[-1200,0],[-500,0],[200,0],[900,0],[-1200,-500],[-500,-500],
+				[200,-500],[900,-500],[-1200,-1000],[-500,-1000],[200,-1000],[900,-1000]];
+				var nameArray=["增城山洪灾害监测预警系统","三防责任人管理系统","城镇排水管网数据查询系统","计划用水管理系统","水雨情遥测系统","局档案管理系统","移民管理系统","水土保持审批网上申报系统","水资源计量管理系统","增城山洪地质灾害预警系统","污水处理厂污染源数据平台","水利工程数据库查询系统"];
+				
+				for(var i=0;i<12;i++){
+					var element = document.createElement( 'div' );
+					element.className = 'element';
+					element.setAttribute("id",i);
+
+					var image=document.createElement( 'img' );
+					var p=i+1;
+					image.src="three.js-master/images/"+p+".png";
+					element.appendChild( image );
+					
+					var cuteName = document.createElement( 'div' );
+					
+					cuteName.className = 'name';
+					cuteName.textContent = nameArray[ i] ;
+					
+					element.appendChild( cuteName );
+					
+					var object = new THREE.CSS3DObject( element );
+					element.parent=object;
+					object.element.addEventListener("click",function(){
+					var pickId=$(this).attr("id");  
+					switch(pickId){
+						case "0":{
+							window.location.href='../../loginPage.html';
+							break;
+						}
+						case "1":{
+							window.location.href="http://zrr.gd3f.gov.cn/zrr/";
+							break;
+						}
+						case "2":{
+							
+							break;
+						}
+						case "3":{
+							window.location.href="http://127.27.28.245:8080/ZCJHYS/index.jsp";
+							break;
+						}
+						case "4":{
+							
+							break;
+						}
+						case "5":{
+							
+							break;
+						}
+						case "6":{
+							window.location.href="http://ymb.gdwater.gov.cn/ymcct/GIS/jxh_gis/JXH_GIS.html?code=440183";
+							break;
+						}
+						case "7":{
+							window.location.href="http://www.gzstbc.org/";
+							break;
+						}
+						case "8":{
+							window.location.href="http://59.41.9.210/login.aspx";
+							break;
+						}
+						case "9":{
+							window.location.href="http://113.108.192.98:8686/sh/";
+							break;
+						}
+						case "10":{
+							window.location.href="http://121.8.226.247:8080";
+							break;
+						}
+						case "11":{
+							window.location.href="http://172.27.28.231:8088/gzssjzxzc";
+							break;
+						}
+					
+						}				
+					});
+					scene.add( object );
+					objects.push( object );
+					
+					//
+
+					var object = new THREE.Object3D();
+					object.position.x =positionArray[i][0]+140;
+					object.position.y =positionArray[i][1]+480;
+
+					targets.table.push( object );
+				
+				}
+				
+				
+
+				// sphere
+
+				var vector = new THREE.Vector3();
+
+				for ( var l=objects.length-1, i = l;i >=0 ; i -- ) {
+
+					var phi = Math.acos( -1 + ( 2 * i ) / l );
+					var theta = Math.sqrt( l * Math.PI ) * phi;
+
+					var object = new THREE.Object3D();
+
+					object.position.x = 900 * Math.cos( theta ) * Math.sin( phi );
+					object.position.y = 900 * Math.sin( theta ) * Math.sin( phi );
+					object.position.z = 900 * Math.cos( phi );
+
+					vector.copy( object.position ).multiplyScalar( 2 );
+
+					object.lookAt( vector );
+
+					targets.sphere.push( object );
+
+				}
+
+				// helix
+
+				var vector = new THREE.Vector3();
+
+				for ( l=objects.length, i=0; i <l; i ++ ) {
+
+					if(i==0){
+						var changeIndex3=3;
+						var phi = changeIndex3 *1 + Math.PI;
+						var object = new THREE.Object3D();
+						object.position.x = 700 * Math.sin( phi );
+						object.position.y = - ( changeIndex3 * 90 ) + 280;
+						object.position.z = 700 * Math.cos( phi );
+
+						vector.x = object.position.x * 2;
+						vector.y = object.position.y ;
+						vector.z = object.position.z * 2;
+
+						object.lookAt( vector );
+						targets.helix.push( object );
+					}
+					else if(i==3){
+						var changeIndex0=0;
+						var phi = changeIndex0 *1 + Math.PI;
+						var object = new THREE.Object3D();
+						object.position.x = 700 * Math.sin( phi );
+						object.position.y = - ( changeIndex0 * 90 ) + 280;
+						object.position.z = 700 * Math.cos( phi );
+
+						vector.x = object.position.x * 2;
+						vector.y = object.position.y ;
+						vector.z = object.position.z * 2;
+
+						object.lookAt( vector );
+						targets.helix.push( object );
+					}
+					else{
+
+						var phi = i *1 + Math.PI;
+						var object = new THREE.Object3D();
+						object.position.x = 700 * Math.sin( phi );
+						object.position.y = - ( i * 90 ) + 280;
+						object.position.z = 700 * Math.cos( phi );
+
+						vector.x = object.position.x * 2;
+						vector.y = object.position.y ;
+						vector.z = object.position.z * 2;
+
+						object.lookAt( vector );
+						targets.helix.push( object );
+					}
+
+				}
+
+				// grid
+
+				for ( var i = 0; i < objects.length; i ++ ) {
+
+					var object = new THREE.Object3D();
+
+					object.position.x = ( ( i % 4 ) * 700 ) - 1050;
+					object.position.y =( - ( Math.floor( i / 4 ) ) * 300 ) + 100;
+					object.position.z = -( Math.floor( i / 4 ) ) * 800 + 400;
+
+					targets.grid.push( object );
+
+				}
+
+				//
+
+				renderer = new THREE.CSS3DRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.domElement.style.position = 'absolute';
+				document.getElementById( 'container' ).appendChild( renderer.domElement );
+
+				//
+
+				controls = new THREE.TrackballControls( camera, renderer.domElement );
+				controls.rotateSpeed = 0.5;
+				controls.minDistance = 500;
+				controls.maxDistance = 6000;
+				controls.addEventListener( 'change', render );
+
+				var button = document.getElementById( 'table' );
+				button.addEventListener( 'click', function ( event ) {
+
+					transform( targets.table, 1000 );
+
+				}, false );
+
+				var button = document.getElementById( 'sphere' );
+				button.addEventListener( 'click', function ( event ) {
+
+					transform( targets.sphere, 1000 );
+
+				}, false );
+
+				var button = document.getElementById( 'helix' );
+				button.addEventListener( 'click', function ( event ) {
+
+					transform( targets.helix, 1000 );
+
+				}, false );
+
+				var button = document.getElementById( 'grid' );
+				button.addEventListener( 'click', function ( event ) {
+
+					transform( targets.grid, 1000 );
+
+				}, false );
+
+				transform( targets.sphere, 1000 );
+
+				//
+				
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+			
+			function transform( targets, duration ) {
+
+				TWEEN.removeAll();
+
+				for ( var i = 0; i < objects.length; i ++ ) {
+
+					var object = objects[ i ];
+					var target = targets[ i ];
+
+					new TWEEN.Tween( object.position )
+						.to( { x: target.position.x, y: target.position.y, z: target.position.z }, Math.random() * duration + duration )
+						.easing( TWEEN.Easing.Exponential.InOut )
+						.start();
+
+					new TWEEN.Tween( object.rotation )
+						.to( { x: target.rotation.x, y: target.rotation.y, z: target.rotation.z }, Math.random() * duration + duration )
+						.easing( TWEEN.Easing.Exponential.InOut )
+						.start();
+
+				}
+
+				new TWEEN.Tween( this )
+					.to( {}, duration * 2 )
+					.onUpdate( render )
+					.start();
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				render();
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				TWEEN.update();
+
+				controls.update();
+				
+
+			}
+
+			function render() {
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+	</body>
+</html>
